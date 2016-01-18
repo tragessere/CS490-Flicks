@@ -12,11 +12,13 @@ import MBProgressHUD
 
 class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate {
   @IBOutlet weak var tableView: UITableView!
+  @IBOutlet weak var errorView: UIView!
   
   var refreshControl: UIRefreshControl!
   var movies: [NSDictionary]?
   
   var loadingMoreView: InfiniteScrollActivityView?
+  var attemptToLoadOnScroll = true
   var isMoreDataLoading = false
   var pageToLoad = 1
 
@@ -39,9 +41,11 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     insets.bottom += InfiniteScrollActivityView.defaultHeight
     tableView.contentInset = insets
     
+    errorView.addGestureRecognizer(
+        UITapGestureRecognizer(target: self, action: "onTouchErrorLabel"))
+    
+    
     loadMoreData()
-    
-    
   }
 
   override func didReceiveMemoryWarning() {
@@ -62,6 +66,11 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
   
   
   func refreshControlAction(refreshControl: UIRefreshControl) {
+    pageToLoad = 1
+    loadMoreData()
+  }
+  
+  func onTouchErrorLabel() {
     loadMoreData()
   }
 
@@ -96,13 +105,19 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
   }
   
   func scrollViewDidScroll(scrollView: UIScrollView) {
-    if !isMoreDataLoading {
+    if (!isMoreDataLoading){
       
       let scrollViewContentHeight = tableView.contentSize.height
       let scrollOffsetThreshold = scrollViewContentHeight - tableView.bounds.size.height
       
       if (scrollView.contentOffset.y > scrollOffsetThreshold && tableView.dragging) {
+        //Stop the app from repeatedly calling API at the bottom of the list
+        if !attemptToLoadOnScroll {
+          return
+        }
+        
         isMoreDataLoading = true
+        attemptToLoadOnScroll = false
         
         let frame = CGRectMake(0, tableView.contentSize.height, tableView.bounds.size.width, InfiniteScrollActivityView.defaultHeight)
         loadingMoreView?.frame = frame
@@ -110,6 +125,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
       
         loadMoreData()
       } else {
+        attemptToLoadOnScroll = true
         loadingMoreView?.stopAnimating()
       }
       
@@ -166,9 +182,15 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
       completionHandler: { (dataOrNil, response, error) in
         
         if let _ = error {
-          //TODO: show error message
+          self.errorView.hidden = false
+          
+          MBProgressHUD.hideHUDForView(self.view, animated: true)
+          self.refreshControl.endRefreshing()
+          self.isMoreDataLoading = false
+          
           return
         } else {
+          self.errorView.hidden = true
           print("error was nil (there were no network errors)")
         }
         
