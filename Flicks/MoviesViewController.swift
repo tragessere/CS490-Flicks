@@ -227,15 +227,36 @@ extension MoviesViewController: UICollectionViewDataSource, UICollectionViewDele
   func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
     let cell = collectionView.dequeueReusableCellWithReuseIdentifier("com.evantragesser.MovieCell", forIndexPath: indexPath) as! MovieCell
     
-    let baseUrl = "http://image.tmdb.org/t/p/w500"
+    let baseUrl = "http://image.tmdb.org/t/p/w300"
     
     let movie = filteredMovies![indexPath.row]
     let title = movie["title"] as! String
     
     
     if let posterPath = movie["poster_path"] as? String {
+      //Hide image first either way to avoid the flickering when it's replaced
+      cell.posterView.image = nil
+      
       let imageUrl = NSURL(string: baseUrl + posterPath)
-      cell.posterView.setImageWithURL(imageUrl!)
+      let imageRequest = NSURLRequest(URL: imageUrl!)
+      cell.posterView.setImageWithURLRequest(
+          imageRequest,
+          placeholderImage: nil,
+          success: { (imageRequest, imageResponse, image) -> Void in
+            //Response is nil for a cached image
+            if imageResponse != nil {
+              cell.posterView.alpha = 0
+              cell.posterView.image = image
+              UIView.animateWithDuration(0.3, animations: { () -> Void in
+                cell.posterView.alpha = 1.0
+              })
+            } else {
+              cell.posterView.image = image
+            }
+          },
+          failure: { (imageRequest, imageResponse, error) ->Void in
+      
+          })
     }
     
     
