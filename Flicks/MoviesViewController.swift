@@ -10,14 +10,18 @@ import UIKit
 import AFNetworking
 import MBProgressHUD
 
-class MoviesViewController: UIViewController, UIScrollViewDelegate {
+class MoviesViewController: UIViewController, UIScrollViewDelegate, UISearchResultsUpdating {
   
   @IBOutlet weak var collectionView: UICollectionView!
   @IBOutlet weak var errorView: UIView!
   @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
+  @IBOutlet weak var searchContainer: UIView!
   
   var refreshControl: UIRefreshControl!
   var movies: [NSDictionary]?
+  var filteredMovies: [NSDictionary]?
+  
+  var searchController: UISearchController!
   
   var loadingMoreView: InfiniteScrollActivityView?
   var attemptToLoadOnScroll = true
@@ -39,6 +43,14 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate {
     refreshControl = UIRefreshControl()
     refreshControl.addTarget(self, action: "refreshControlAction:", forControlEvents: UIControlEvents.ValueChanged)
     collectionView.insertSubview(refreshControl, atIndex: 0)
+    
+    searchController = UISearchController(searchResultsController: nil)
+    searchController.searchResultsUpdater = self
+    searchController.dimsBackgroundDuringPresentation = false
+    setupSearchBarStyle(searchController.searchBar)
+    searchContainer.addSubview(searchController.searchBar)
+    automaticallyAdjustsScrollViewInsets = false
+    definesPresentationContext = true
     
     let frame = CGRectMake(0, collectionView.contentSize.height, collectionView.bounds.size.width, InfiniteScrollActivityView.defaultHeight)
     loadingMoreView = InfiniteScrollActivityView(frame: frame)
@@ -63,6 +75,14 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate {
   
   override func preferredStatusBarStyle() -> UIStatusBarStyle {
     return UIStatusBarStyle.LightContent
+  }
+  
+  func setupSearchBarStyle(searchBar: UISearchBar) {
+    searchBar.sizeToFit()
+    searchBar.keyboardAppearance = UIKeyboardAppearance.Dark
+    searchBar.barStyle = UIBarStyle.BlackTranslucent
+    searchBar.barTintColor = UIColor(hue: 0, saturation: 0, brightness: 0.15, alpha: 1)
+    searchBar.tintColor = UIColor.whiteColor()
   }
 
   /*
@@ -115,6 +135,16 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate {
     }
   }
   
+  func updateSearchResultsForSearchController(searchController: UISearchController) {
+    if let searchText = searchController.searchBar.text {
+      filteredMovies = searchText.isEmpty ? movies : movies?.filter({(dataItem: NSDictionary) -> Bool in
+        return (dataItem["title"] as! String).rangeOfString(searchText, options: .CaseInsensitiveSearch) != nil
+      })
+    }
+    
+    collectionView.reloadData()
+  }
+  
   
   func loadMoreData() {
     MBProgressHUD.showHUDAddedTo(self.view, animated: true)
@@ -156,8 +186,9 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate {
                 self.movies = responseDictionary["results"] as? [NSDictionary]
               } else {
                 self.movies = self.movies! + (responseDictionary["results"] as? [NSDictionary])!
-                self.printAllTitles()
               }
+              
+              self.updateSearchResultsForSearchController(self.searchController)
               
               self.collectionView.reloadData()
               
@@ -185,7 +216,7 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate {
 extension MoviesViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
   
   func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-    if let movies = movies {
+    if let movies = filteredMovies {
       return movies.count
     } else {
       return 0
@@ -198,7 +229,7 @@ extension MoviesViewController: UICollectionViewDataSource, UICollectionViewDele
     
     let baseUrl = "http://image.tmdb.org/t/p/w500"
     
-    let movie = movies![indexPath.row]
+    let movie = filteredMovies![indexPath.row]
     let title = movie["title"] as! String
     
     
@@ -210,21 +241,9 @@ extension MoviesViewController: UICollectionViewDataSource, UICollectionViewDele
     
     cell.titleLabel.text = title
     
+    
     return cell
   }
-  
-  
-//  func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
-//    let totalWidth = collectionView.bounds.size.width
-//    let numberOfCellsPerRow = 2
-//    let cellWidth = CGFloat(Int(totalWidth) / numberOfCellsPerRow)
-//    let cellHeight = CGFloat(cellWidth * 1.5)
-//    
-//    
-//    
-//    return CGSizeMake(cellWidth, cellHeight)
-//  }
-  
   
   func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
     print("Selected cell number: \(indexPath.row)")
