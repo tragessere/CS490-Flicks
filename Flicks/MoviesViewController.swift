@@ -38,7 +38,7 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate, UISearchResu
     
     flowLayout.minimumLineSpacing = 0
     flowLayout.minimumInteritemSpacing = 0
-    flowLayout.sectionInset = UIEdgeInsetsMake(0, 0, 0, 0)
+    flowLayout.sectionInset = UIEdgeInsetsMake(105, 0, 0, 0)
     
     refreshControl = UIRefreshControl()
     refreshControl.addTarget(self, action: "refreshControlAction:", forControlEvents: UIControlEvents.ValueChanged)
