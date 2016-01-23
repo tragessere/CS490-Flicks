@@ -169,7 +169,6 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate, UISearchResu
         
         if let _ = error {
           self.errorView.hidden = false
-          print("network error")
           
           MBProgressHUD.hideHUDForView(self.view, animated: true)
           self.refreshControl.endRefreshing()
@@ -178,7 +177,6 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate, UISearchResu
           return
         } else {
           self.errorView.hidden = true
-          print("error was nil (there were no network errors)")
         }
         
         
