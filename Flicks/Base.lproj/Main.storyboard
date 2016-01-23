@@ -90,7 +90,7 @@
             </objects>
             <point key="canvasLocation" x="421.5" y="325.5"/>
         </scene>
-        <!--Detail View Controller-->
+        <!--Details-->
         <scene sceneID="aoc-ma-fLH">
             <objects>
                 <viewController id="m2m-bg-tEd" customClass="DetailViewController" customModule="Flicks" customModuleProvider="target" sceneMemberID="viewController">
@@ -132,7 +132,7 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
-                    <navigationItem key="navigationItem" id="HCX-2e-6Qu"/>
+                    <navigationItem key="navigationItem" title="Details" id="HCX-2e-6Qu"/>
                     <connections>
                         <outlet property="infoView" destination="8ue-0V-wk9" id="zAB-Qf-WxZ"/>
                         <outlet property="overviewLabel" destination="MGZ-O7-Ugu" id="arP-NL-Hjt"/>
@@ -206,6 +206,9 @@
                     <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="black" id="BHi-F3-KWb">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <textAttributes key="titleTextAttributes">
+                            <color key="textColor" red="1" green="0.5" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                        </textAttributes>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>
@@ -220,4 +223,5 @@
     <resources>
         <image name="Error Filled-35" width="17" height="17"/>
     </resources>
+    <color key="tintColor" red="1" green="0.5" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
 </document>

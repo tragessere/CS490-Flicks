@@ -26,6 +26,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     nowPlayingNavigationController.tabBarItem.title = "Now Playing"
     nowPlayingNavigationController.tabBarItem.selectedImage = UIImage(named: "now_playing_filled")
     nowPlayingNavigationController.tabBarItem.image = UIImage(named: "now_playing")
+    nowPlayingNavigationController.navigationBar.topItem?.title  = "Now Playing"
     
     let topRatedNavigationController = storyboard.instantiateViewControllerWithIdentifier("MoviesNavigationController") as! UINavigationController
     let topRatedViewController = topRatedNavigationController.topViewController as! MoviesViewController
@@ -33,11 +34,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     topRatedNavigationController.tabBarItem.title = "Top Rated"
     topRatedNavigationController.tabBarItem.selectedImage = UIImage(named: "top_rated_filled")
     topRatedNavigationController.tabBarItem.image = UIImage(named: "top_rated")
+    topRatedNavigationController.navigationBar.topItem?.title = "Top Rated"
     
     let tabBarController = UITabBarController()
     tabBarController.viewControllers = [nowPlayingNavigationController, topRatedNavigationController]
     tabBarController.tabBar.barStyle = UIBarStyle.Black
-    tabBarController.tabBar.selectedImageTintColor = UIColor.orangeColor()
+    tabBarController.tabBar.tintColor = UIColor.orangeColor()
     
     window?.rootViewController = tabBarController
     window?.makeKeyAndVisible()

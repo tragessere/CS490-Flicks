@@ -33,7 +33,7 @@ class DetailViewController: UIViewController {
     overviewLabel.text = overview
     overviewLabel.sizeToFit()
     
-    let baseUrl = "http://image.tmdb.org/t/p/w500"
+    let baseUrl = "http://image.tmdb.org/t/p/original"
     if let posterPath = movie["poster_path"] as? String {
       //Hide image first either way to avoid the flickering when it's replaced
       posterImageView.image = nil
