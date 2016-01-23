@@ -20,6 +20,7 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate, UISearchResu
   var refreshControl: UIRefreshControl!
   var movies: [NSDictionary]?
   var filteredMovies: [NSDictionary]?
+  var endpoint: String!
   
   var searchController: UISearchController!
   
@@ -85,15 +86,20 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate, UISearchResu
     searchBar.tintColor = UIColor.whiteColor()
   }
 
-  /*
+  
   // MARK: - Navigation
 
   // In a storyboard-based application, you will often want to do a little preparation before navigation
   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
       // Get the new view controller using segue.destinationViewController.
       // Pass the selected object to the new view controller.
+    let cell = sender as! UICollectionViewCell
+    let indexPath = collectionView.indexPathForCell(cell)
+    let movie = movies![indexPath!.row]
+    
+    let detailViewController = segue.destinationViewController as! DetailViewController
+    detailViewController.movie = movie
   }
-  */
   
   
   func refreshControlAction(refreshControl: UIRefreshControl) {
@@ -150,7 +156,7 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate, UISearchResu
     MBProgressHUD.showHUDAddedTo(self.view, animated: true)
     
     let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-    let url = NSURL(string: "Https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)&page=\(pageToLoad)")
+    let url = NSURL(string: "Https://api.themoviedb.org/3/movie/\(endpoint)?api_key=\(apiKey)&page=\(pageToLoad)")
     let request = NSURLRequest(URL: url!)
     let session = NSURLSession(
       configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
@@ -259,14 +265,12 @@ extension MoviesViewController: UICollectionViewDataSource, UICollectionViewDele
           })
     }
     
-    
     cell.titleLabel.text = title
-    
     
     return cell
   }
   
   func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
-    print("Selected cell number: \(indexPath.row)")
+    collectionView.deselectItemAtIndexPath(indexPath, animated: false)
   }
 }

@@ -12,11 +12,20 @@ class MovieCell: UICollectionViewCell {
   @IBOutlet weak var titleLabel: UILabel!
   @IBOutlet weak var posterView: UIImageView!
   
-  
 
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        // Initialization code
-    }
+
+  override func awakeFromNib() {
+    super.awakeFromNib()
+    // Initialization code
+    
+    let background = UIView()
+    self.backgroundView = background
+    self.backgroundView?.backgroundColor = UIColor.clearColor()
+    
+    let selectedBackground = UIView()
+    self.selectedBackgroundView = selectedBackground
+    self.selectedBackgroundView?.backgroundColor = UIColor.darkGrayColor()
+    
+  }
 
 }
