@@ -8,30 +8,102 @@
 
 import UIKit
 
-class DetailViewController: UIViewController {
+class DetailViewController: UIViewController, UIScrollViewDelegate {
   @IBOutlet weak var scrollView: UIScrollView!
   @IBOutlet weak var posterImageView: UIImageView!
-  @IBOutlet weak var infoView: UIView!
+  @IBOutlet weak var posterContainer: UIView!
+  
+  @IBOutlet weak var fadeInTitleView: UIView!
   @IBOutlet weak var titleLabel: UILabel!
-  @IBOutlet weak var overviewLabel: UILabel!
+  @IBOutlet weak var mpaaRatingLabel: UILabel!
+  @IBOutlet weak var releaseDateLabel: UILabel!
 
+  @IBOutlet weak var infoView: UIView!
+  @IBOutlet weak var userRatingLabel: UILabel!
+  @IBOutlet weak var taglineLabel: UILabel!
+  @IBOutlet weak var taglineSeparator: UIView!
+  @IBOutlet weak var overviewMarkerLabel: UILabel!
+  @IBOutlet weak var overviewLabel: UILabel!
+  @IBOutlet weak var overviewSeparator: UIView!
+  @IBOutlet weak var genreMarkerLabel: UILabel!
+  @IBOutlet weak var genreListLabel: UILabel!
+  
+  
+  
   var movie: NSDictionary!
+  
+  let posterResizeOffset: CGFloat = 200
+  var fullHeight: CGFloat!
+  var fullWidth: CGFloat!
+  var step: CGFloat!
+  
+  var minimumInfoViewHeight: CGFloat!
+  let smallPadding: CGFloat = 10
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    
+    print("")
     // Do any additional setup after loading the view.
     
-    scrollView.contentSize = CGSize(width: scrollView.frame.size.width, height: infoView.frame
-    .origin.y + infoView.frame.size.height)
+//    scrollView.contentSize = CGSize(width: scrollView.frame.size.width, height: infoView.frame
+//    .origin.y + infoView.frame.size.height)
+    updateScrollViewSize()
+    scrollView.delegate = self
     
+    fullHeight = posterContainer.frame.height
+    fullWidth = posterContainer.frame.width
+    step = (1 - (scrollView.frame.size.width / fullWidth)) / posterResizeOffset
+    
+    let smallPosterHeight = posterImageView.frame.height * (scrollView.frame.size.width / fullWidth)
+    
+    minimumInfoViewHeight = UIScreen.mainScreen().bounds.height - smallPosterHeight + 108
+    
+    fadeInTitleView.frame = CGRectMake(
+      fadeInTitleView.frame.origin.x,
+      fadeInTitleView.frame.origin.y,
+      scrollView.frame.size.width - (posterImageView.frame.width * (scrollView.frame.size.width / fullWidth)),
+      smallPosterHeight)
     
     let title = movie["title"] as! String
     let overview = movie["overview"] as! String
+    let rating = "Rating: \(movie["vote_average"] as! Double) (Average of \(movie["vote_count"] as! Int) votes)"
     
     titleLabel.text = title
+    titleLabel.sizeToFit()
+    mpaaRatingLabel.layer.borderColor = UIColor.whiteColor().CGColor
+    mpaaRatingLabel.layer.borderWidth = 1.0
+    mpaaRatingLabel.sizeToFit()
     overviewLabel.text = overview
-    overviewLabel.sizeToFit()
+    userRatingLabel.text = rating
+    
+    titleLabel.frame = CGRectMake(
+      titleLabel.frame.origin.x,
+      titleLabel.frame.origin.y,
+      scrollView.frame.size.width - (posterImageView.frame.width * (scrollView.frame.size.width / fullWidth)) - (2 * smallPadding),
+      titleLabel.frame.height)
+    mpaaRatingLabel.frame = CGRectMake(
+      mpaaRatingLabel.frame.origin.x,
+      titleLabel.frame.origin.y + titleLabel.frame.height,
+      mpaaRatingLabel.frame.width,
+      mpaaRatingLabel.frame.height)
+    releaseDateLabel.frame = CGRectMake(
+      releaseDateLabel.frame.origin.x,
+      mpaaRatingLabel.frame.origin.y + mpaaRatingLabel.frame.height + smallPadding,
+      releaseDateLabel.frame.width,
+      releaseDateLabel.frame.height)
+    
+    organizeInfoView()
+    
+    let dateFormatter = NSDateFormatter()
+    dateFormatter.dateFormat = "yyyy-MM-dd"
+    let dateString = self.movie["release_date"] as? String
+    
+    if let dateString = dateString {
+      let releaseDate = dateFormatter.dateFromString(dateString)
+      dateFormatter.dateFormat = "MMM dd, yyyy"
+      self.releaseDateLabel.text = "Release Date: \(dateFormatter.stringFromDate(releaseDate!))"
+      self.releaseDateLabel.sizeToFit()
+    }
     
     
     let smallImageUrl = "http://image.tmdb.org/t/p/w45"
@@ -67,9 +139,13 @@ class DetailViewController: UIViewController {
           
       })
     }
+    
+    loadRating()
+    loadDetails()
   }
   
-  override func viewWillAppear(animated: Bool) {
+  override func viewWillDisappear(animated: Bool) {
+    scrollView.delegate = nil
   }
   
   override func didReceiveMemoryWarning() {
@@ -104,5 +180,234 @@ class DetailViewController: UIViewController {
   // Pass the selected object to the new view controller.
   }
   */
+  
+  func scrollViewDidScroll(scrollView: UIScrollView) {
+    //The navigation bar pushes the view down so an offset of -64 would be the top.
+//    let offset = scrollView.contentOffset.y + (self.navigationController?.navigationBar.frame.size.height)!
+    let offset = scrollView.contentOffset.y + 64
+    
+    var sizeRatio: CGFloat!
+    var posterContainerTop: CGFloat!
+    
+    if offset > 0 && offset < posterResizeOffset {   //Shrinking the top container. The position follows the scroll view to make it stick to the top
+      sizeRatio = 1 - (offset * step)
+      posterContainerTop = offset
+    } else if offset <= 0 {           //Overscrolling on the top.
+      sizeRatio = 1
+      posterContainerTop = 0
+    } else if offset >= posterResizeOffset {         //Scrolling down, done shrinking the top container.
+      sizeRatio = 1 - (posterResizeOffset * step)
+      posterContainerTop = posterResizeOffset
+    }
+    
+    let containerHeight = fullHeight * sizeRatio
+    posterContainer.frame = CGRectMake(0, posterContainerTop, fullWidth * sizeRatio, containerHeight)
+    fadeInTitleView.frame = CGRectMake(posterImageView.frame.width, 0, fadeInTitleView.frame.width, fadeInTitleView.frame.height)
+    infoView.frame = CGRectMake(0, containerHeight, infoView.frame.width, infoView.frame.height)
+    
+    updateScrollViewSize()
+    
+    let startFadeInOffset = posterResizeOffset / 2.0
+    let endFadeInOffset = posterResizeOffset * 0.9
+    
+    var titleAlpha: CGFloat!
+    if offset > startFadeInOffset && offset < endFadeInOffset {
+      titleAlpha = (offset - startFadeInOffset) / (endFadeInOffset - startFadeInOffset)
+    } else if offset <= startFadeInOffset {
+      titleAlpha = 0
+    } else if offset >= endFadeInOffset{
+      titleAlpha = 1
+    }
+    
+    fadeInTitleView.alpha = titleAlpha
+  }
+  
+  func loadRating() {
+    let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
+    let url = NSURL(string: "Https://api.themoviedb.org/3/movie/\(movie["id"] as! Int)/release_dates?api_key=\(apiKey)")
+    let request = NSURLRequest(URL: url!)
+    let session = NSURLSession(
+      configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
+      delegate: nil,
+      delegateQueue:  NSOperationQueue.mainQueue()
+    )
+    
+    let task : NSURLSessionDataTask = session.dataTaskWithRequest(request,
+      completionHandler: { (dataOrNil, response, error) in
+        
+        if let _ = error {
+          print("details request error")
+          return
+        }
+        
+        if let data = dataOrNil {
+          if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
+            data, options:[]) as? NSDictionary {
+              //NSLog("response: \(responseDictionary)")
+              
+              let allReleaseInformation = responseDictionary["results"] as? [NSDictionary]
+              
+              var movieReleaseInfo: NSDictionary?
+              for releaseItem in allReleaseInformation! {
+                if (releaseItem["iso_3166_1"] as! String) == "US" {
+                  
+                  let releaseDates = releaseItem["release_dates"] as! [NSDictionary]
+                  
+                  for releaseType in releaseDates {
+                    if (releaseType["type"] as! Int) == 3 {
+                      movieReleaseInfo = releaseType
+                    }
+                  }
+                  
+                  break
+                }
+              }
+              
+              if let movieReleaseInfo = movieReleaseInfo {
+                var mpaaRating = movieReleaseInfo["certification"] as! String
+                if mpaaRating == "" {
+                  mpaaRating = "NR"
+                }
+                self.mpaaRatingLabel.text = " \(mpaaRating) "
+                self.mpaaRatingLabel.sizeToFit()
+              } else {
+                print("movieReleaseInfo was nil")
+              }
+          }
+        }
+    });
+    task.resume()
+  }
 
+  
+  func loadDetails() {
+    let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
+    let url = NSURL(string: "Https://api.themoviedb.org/3/movie/\(movie["id"] as! Int)?api_key=\(apiKey)")
+    let request = NSURLRequest(URL: url!)
+    let session = NSURLSession(
+      configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
+      delegate: nil,
+      delegateQueue:  NSOperationQueue.mainQueue()
+    )
+    
+    let task : NSURLSessionDataTask = session.dataTaskWithRequest(request,
+      completionHandler: { (dataOrNil, response, error) in
+        
+        if let _ = error {
+          print("details request error")
+          return
+        }
+        
+        if let data = dataOrNil {
+          if let movie = try! NSJSONSerialization.JSONObjectWithData(
+            data, options:[]) as? NSDictionary {
+              //NSLog("response: \(responseDictionary)")
+              
+              let tagline = movie["tagline"] as! String
+              self.taglineLabel.text = tagline
+              
+              
+              let genres = movie["genres"] as! [NSDictionary]
+              
+              var genreString = ""
+              for genre in genres {
+                genreString += (genre["name"] as! String)
+                genreString += ", "
+              }
+              let range = genreString.endIndex.advancedBy(-2)..<genreString.endIndex
+              genreString.removeRange(range)
+              
+              self.genreListLabel.text = genreString
+              
+              self.organizeInfoView()
+          }
+        }
+    });
+    task.resume()
+  }
+  
+  
+  func organizeInfoView() {
+    let margin: CGFloat = 20
+    
+    taglineLabel.sizeToFit()
+    taglineLabel.frame = CGRectMake(
+      taglineLabel.frame.origin.x,
+      userRatingLabel.frame.origin.y + userRatingLabel.frame.height + margin,
+      taglineSeparator.frame.width,
+      taglineLabel.frame.height)
+    
+    taglineSeparator.frame = CGRectMake(
+      taglineSeparator.frame.origin.x,
+      taglineLabel.frame.origin.y + taglineLabel.frame.height + margin,
+      taglineSeparator.frame.width,
+      taglineSeparator.frame.height)
+    
+    overviewMarkerLabel.frame = CGRectMake(
+      overviewMarkerLabel.frame.origin.x,
+      taglineSeparator.frame.origin.y + taglineSeparator.frame.height + margin,
+      overviewMarkerLabel.frame.width,
+      overviewMarkerLabel.frame.height)
+    
+    overviewLabel.sizeToFit()
+    overviewLabel.frame = CGRectMake(
+      overviewLabel.frame.origin.x,
+      overviewMarkerLabel.frame.origin.y + overviewMarkerLabel.frame.height + margin,
+      overviewLabel.frame.width,
+      overviewLabel.frame.height)
+    
+    overviewSeparator.frame = CGRectMake(
+      overviewSeparator.frame.origin.x,
+      overviewLabel.frame.origin.y + overviewLabel.frame.height + margin,
+      overviewSeparator.frame.width,
+      overviewSeparator.frame.height)
+    
+    genreMarkerLabel.frame = CGRectMake(
+      genreMarkerLabel.frame.origin.x,
+      overviewSeparator.frame.origin.y + overviewSeparator.frame.height + margin,
+      genreMarkerLabel.frame.width,
+      genreMarkerLabel.frame.height)
+    
+    genreListLabel.frame = CGRectMake(
+      genreListLabel.frame.origin.x,
+      genreMarkerLabel.frame.origin.y + genreMarkerLabel.frame.height + margin,
+      genreListLabel.frame.width,
+      genreListLabel.frame.height)
+    
+    var totalHeight =
+        userRatingLabel.frame.origin.y +
+        userRatingLabel.frame.height +
+        taglineLabel.frame.height +
+        taglineSeparator.frame.height +
+        overviewMarkerLabel.frame.height +
+        overviewLabel.frame.height +
+        overviewSeparator.frame.height +
+        genreMarkerLabel.frame.height +
+        genreListLabel.frame.height +
+        (10 * margin) + 220
+    
+    if totalHeight < minimumInfoViewHeight {
+      totalHeight = minimumInfoViewHeight
+      print("too small, changed to \(totalHeight)")
+    }
+    
+    infoView.frame = CGRectMake(
+      infoView.frame.origin.x,
+      infoView.frame.origin.y,
+      infoView.frame.width,
+      totalHeight)
+    
+    updateScrollViewSize()
+  }
+  
+  func updateScrollViewSize() {
+    let newHeight = posterContainer.frame.height + infoView.frame.height
+//    if newHeight < scrollView.frame.height {
+//      newHeight = scrollView.frame.height
+//      print("Too small, updating to \(newHeight)")
+//    }
+    
+    scrollView.contentSize = CGSize(width: scrollView.frame.width, height: newHeight)
+  }
+  
 }

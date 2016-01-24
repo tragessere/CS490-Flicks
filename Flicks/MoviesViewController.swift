@@ -95,7 +95,19 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate, UISearchResu
       // Pass the selected object to the new view controller.
     let cell = sender as! UICollectionViewCell
     let indexPath = collectionView.indexPathForCell(cell)
-    let movie = movies![indexPath!.row]
+    
+    var movie: NSDictionary!
+    if let searchText = searchController.searchBar.text {
+      if searchText.isEmpty {
+        movie = movies![indexPath!.row]
+      } else {
+        movie = filteredMovies![indexPath!.row]
+      }
+    } else {
+      movie = movies![indexPath!.row]
+    }
+    
+//    let movie = movies![indexPath!.row]
     
     let detailViewController = segue.destinationViewController as! DetailViewController
     detailViewController.movie = movie
