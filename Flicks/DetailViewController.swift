@@ -264,6 +264,8 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
                 }
               }
               
+              print(movieReleaseInfo)
+              
               if let movieReleaseInfo = movieReleaseInfo {
                 var mpaaRating = movieReleaseInfo["certification"] as! String
                 if mpaaRating == "" {
@@ -272,6 +274,8 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
                 self.mpaaRatingLabel.text = " \(mpaaRating) "
                 self.mpaaRatingLabel.sizeToFit()
               } else {
+                self.mpaaRatingLabel.text = " NR "
+                self.mpaaRatingLabel.sizeToFit()
                 print("movieReleaseInfo was nil")
               }
           }
