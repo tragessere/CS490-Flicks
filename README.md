@@ -31,8 +31,6 @@ Here's a walkthrough of implemented user stories:
 
 <img src='Flicks-1.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
-[direct link](http://i.imgur.com/1wFdvFW.gif)
-
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
 ## Notes
@@ -66,41 +64,47 @@ limitations under the License.
 
 Flicks is a movies app displaying box office and top rental DVDs using [The Movie Database API](http://docs.themoviedb.apiary.io/#).
 
-Time spent: **X** hours spent in total
+Time spent: **13** hours spent in total
 
 ## User Stories
 
 The following **required** functionality is completed:
 
-- [ ] User can view movie details by tapping on a cell.
-- [ ] User can select from a tab bar for either **Now Playing** or **Top Rated** movies.
-- [ ] Customize the selection effect of the cell.
+- [x] User can view movie details by tapping on a cell.
+- [x] User can select from a tab bar for either **Now Playing** or **Top Rated** movies.
+- [x] Customize the selection effect of the cell.
 
 The following **optional** features are implemented:
 
-- [ ] For the large poster, load the low resolution image first and then switch to the high resolution image when complete.
-- [ ] Customize the navigation bar.
+- [x] For the large poster, load the low resolution image first and then switch to the high resolution image when complete.
+- [x] Customize the navigation bar.
 
 The following **additional** features are implemented:
 
-- [ ] List anything else that you can get done to improve the app functionality!
+- [x] Scrolling effect to shrink the poster on the details page to become an icon in the corner
 
 Please list two areas of the assignment you'd like to **discuss further with your peers** during the next class (examples include better ways to implement something, how to extend your app in certain ways, etc):
 
-1. 
-2. 
+1. Append endpoint responses to other responses. I had to use multiple endpoints to get information for each movie
+2. Moving views relative to other views. When adding content to views in the detail page, I would go through and manually update the positions of views to put them into a list. Is it possible to tell a view to always be e.g. 20 points below another view, no matter what size it changes to?
 
 ## Video Walkthrough 
 
 Here's a walkthrough of implemented user stories:
 
-<img src='http://i.imgur.com/link/to/your/gif/file.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='Flicks-2.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
 ## Notes
 
 Describe any challenges encountered while building the app.
+
+ - For the scrolling effect on the details page, I had to add/remove the scroll delegate in the viewWillAppear/Dissappear methods or the scroll delegate would still be called and the app would crash.
+
+ - When shrinking the frame, I had to reposition the labels next to it every time so they would stay aligned to the right side of the image.
+
+ - Updating the UIScrollView content size was very difficult. It seems the navigation bar and toolbar may have an affect on window sizes and scroll positions. I ended up adding some arbitrary space onto the size of the scroll view content so it would scroll all the way after shrinking the poster.
 
 ## License
 
