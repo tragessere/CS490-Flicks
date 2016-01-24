@@ -42,11 +42,8 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    print("")
     // Do any additional setup after loading the view.
     
-//    scrollView.contentSize = CGSize(width: scrollView.frame.size.width, height: infoView.frame
-//    .origin.y + infoView.frame.size.height)
     updateScrollViewSize()
     scrollView.delegate = self
     
@@ -148,11 +145,16 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
     scrollView.delegate = nil
   }
   
+  override func viewWillAppear(animated: Bool) {
+    scrollView.delegate = self
+  }
+  
   override func didReceiveMemoryWarning() {
     super.didReceiveMemoryWarning()
     // Dispose of any resources that can be recreated.
   }
   
+  //Gets the full size version of the poster image
   func requestLargeImage() {
     let posterPath = movie["poster_path"] as! String
     let largeImageUrl = "http://image.tmdb.org/t/p/original"
@@ -183,7 +185,6 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
   
   func scrollViewDidScroll(scrollView: UIScrollView) {
     //The navigation bar pushes the view down so an offset of -64 would be the top.
-//    let offset = scrollView.contentOffset.y + (self.navigationController?.navigationBar.frame.size.height)!
     let offset = scrollView.contentOffset.y + 64
     
     var sizeRatio: CGFloat!
@@ -222,6 +223,7 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
     fadeInTitleView.alpha = titleAlpha
   }
   
+  //Calls the /movie/id/release_dates endpoint to get MPAA rating information
   func loadRating() {
     let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
     let url = NSURL(string: "Https://api.themoviedb.org/3/movie/\(movie["id"] as! Int)/release_dates?api_key=\(apiKey)")
@@ -243,7 +245,6 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
         if let data = dataOrNil {
           if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
             data, options:[]) as? NSDictionary {
-              //NSLog("response: \(responseDictionary)")
               
               let allReleaseInformation = responseDictionary["results"] as? [NSDictionary]
               
@@ -279,7 +280,7 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
     task.resume()
   }
 
-  
+  //Calls the movie/id endpoint get genres and the tagline.
   func loadDetails() {
     let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
     let url = NSURL(string: "Https://api.themoviedb.org/3/movie/\(movie["id"] as! Int)?api_key=\(apiKey)")
@@ -301,7 +302,6 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
         if let data = dataOrNil {
           if let movie = try! NSJSONSerialization.JSONObjectWithData(
             data, options:[]) as? NSDictionary {
-              //NSLog("response: \(responseDictionary)")
               
               let tagline = movie["tagline"] as! String
               self.taglineLabel.text = tagline
@@ -327,6 +327,7 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
   }
   
   
+  //Resets the positions of views in the lower infoView after they have their information set
   func organizeInfoView() {
     let margin: CGFloat = 20
     
@@ -400,13 +401,10 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
     updateScrollViewSize()
   }
   
+  //The content size will be changing after updating some information from the server
+  //as well as when the poster is resizing.
   func updateScrollViewSize() {
     let newHeight = posterContainer.frame.height + infoView.frame.height
-//    if newHeight < scrollView.frame.height {
-//      newHeight = scrollView.frame.height
-//      print("Too small, updating to \(newHeight)")
-//    }
-    
     scrollView.contentSize = CGSize(width: scrollView.frame.width, height: newHeight)
   }
   
