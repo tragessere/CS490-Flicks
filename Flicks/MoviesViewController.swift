@@ -18,8 +18,8 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate, UISearchResu
   @IBOutlet weak var searchContainer: UIView!
   
   var refreshControl: UIRefreshControl!
-  var movies: [NSDictionary]?
-  var filteredMovies: [NSDictionary]?
+  var movies: [Movie]?
+  var filteredMovies: [Movie]?
   var endpoint: String!
   
   var searchController: UISearchController!
@@ -96,7 +96,7 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate, UISearchResu
     let cell = sender as! UICollectionViewCell
     let indexPath = collectionView.indexPathForCell(cell)
     
-    var movie: NSDictionary!
+    var movie: Movie!
     if let searchText = searchController.searchBar.text {
       if searchText.isEmpty {
         movie = movies![indexPath!.row]
@@ -155,8 +155,8 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate, UISearchResu
   
   func updateSearchResultsForSearchController(searchController: UISearchController) {
     if let searchText = searchController.searchBar.text {
-      filteredMovies = searchText.isEmpty ? movies : movies?.filter({(dataItem: NSDictionary) -> Bool in
-        return (dataItem["title"] as! String).rangeOfString(searchText, options: .CaseInsensitiveSearch) != nil
+      filteredMovies = searchText.isEmpty ? movies : movies?.filter({(dataItem: Movie) -> Bool in
+        return dataItem.title.rangeOfString(searchText, options: .CaseInsensitiveSearch) != nil
       })
     }
     
@@ -197,11 +197,16 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate, UISearchResu
             data, options:[]) as? NSDictionary {
               //NSLog("response: \(responseDictionary)")
               
+              var newData = [Movie]()
+              for data in (responseDictionary["results"] as! [NSDictionary]) {
+                newData.append(Movie(fromDictionary: data))
+              }
+              
               if self.pageToLoad == 1 {
                 //First page load
-                self.movies = responseDictionary["results"] as? [NSDictionary]
+                self.movies = newData
               } else {
-                self.movies = self.movies! + (responseDictionary["results"] as? [NSDictionary])!
+                self.movies = self.movies! + newData
               }
               
               self.updateSearchResultsForSearchController(self.searchController)
@@ -222,7 +227,7 @@ class MoviesViewController: UIViewController, UIScrollViewDelegate, UISearchResu
   
   func printAllTitles() {
     for (index, value) in movies!.enumerate() {
-      print("\(index + 1): \(value["title"] as! String)")
+      print("\(index + 1): \(value.title)")
     }
     print("")
   }
@@ -246,10 +251,10 @@ extension MoviesViewController: UICollectionViewDataSource, UICollectionViewDele
     let baseUrl = "http://image.tmdb.org/t/p/w300"
     
     let movie = filteredMovies![indexPath.row]
-    let title = movie["title"] as! String
+    let title = movie.title
     
     
-    if let posterPath = movie["poster_path"] as? String {
+    if let posterPath = movie.posterPath {
       //Hide image first either way to avoid the flickering when it's replaced
       cell.posterView.image = nil
       

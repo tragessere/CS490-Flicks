@@ -30,7 +30,7 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
   
   
   
-  var movie: NSDictionary!
+  var movie: Movie!
   
   let posterResizeOffset: CGFloat = 200
   var fullHeight: CGFloat!
@@ -61,9 +61,9 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
       scrollView.frame.size.width - (posterImageView.frame.width * (scrollView.frame.size.width / fullWidth)),
       smallPosterHeight)
     
-    let title = movie["title"] as! String
-    let overview = movie["overview"] as! String
-    let rating = "Rating: \(movie["vote_average"] as! Double) (Average of \(movie["vote_count"] as! Int) votes)"
+    let title = movie.title
+    let overview = movie.overview
+    let rating = "Rating: \(movie.userRating) (Average of \(movie.userRatingCount) votes)"
     
     titleLabel.text = title
     titleLabel.sizeToFit()
@@ -93,7 +93,7 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
     
     let dateFormatter = NSDateFormatter()
     dateFormatter.dateFormat = "yyyy-MM-dd"
-    let dateString = self.movie["release_date"] as? String
+    let dateString = self.movie.releaseDate
     
     if let dateString = dateString {
       let releaseDate = dateFormatter.dateFromString(dateString)
@@ -104,7 +104,7 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
     
     
     let smallImageUrl = "http://image.tmdb.org/t/p/w45"
-    if let posterPath = movie["poster_path"] as? String {
+    if let posterPath = movie.posterPath {
       //Hide image first either way to avoid the flickering when it's replaced
       posterImageView.image = nil
       
@@ -156,7 +156,7 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
   
   //Gets the full size version of the poster image
   func requestLargeImage() {
-    let posterPath = movie["poster_path"] as! String
+    let posterPath = movie.posterPath!
     let largeImageUrl = "http://image.tmdb.org/t/p/original"
     let largeUrlRequest = NSURLRequest(URL: NSURL(string: largeImageUrl + posterPath)!)
     
@@ -227,7 +227,7 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
   //Calls the /movie/id/release_dates endpoint to get MPAA rating information
   func loadRating() {
     let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-    let url = NSURL(string: "Https://api.themoviedb.org/3/movie/\(movie["id"] as! Int)/release_dates?api_key=\(apiKey)")
+    let url = NSURL(string: "Https://api.themoviedb.org/3/movie/\(movie.id)/release_dates?api_key=\(apiKey)")
     let request = NSURLRequest(URL: url!)
     let session = NSURLSession(
       configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
@@ -288,7 +288,7 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
   //Calls the movie/id endpoint get genres and the tagline.
   func loadDetails() {
     let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-    let url = NSURL(string: "Https://api.themoviedb.org/3/movie/\(movie["id"] as! Int)?api_key=\(apiKey)")
+    let url = NSURL(string: "Https://api.themoviedb.org/3/movie/\(movie.id)?api_key=\(apiKey)")
     let request = NSURLRequest(URL: url!)
     let session = NSURLSession(
       configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
