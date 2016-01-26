@@ -208,7 +208,7 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
     
     updateScrollViewSize()
     
-    let startFadeInOffset = posterResizeOffset / 2.0
+    let startFadeInOffset = posterResizeOffset / 4
     let endFadeInOffset = posterResizeOffset * 0.9
     
     var titleAlpha: CGFloat!
@@ -221,6 +221,7 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
     }
     
     fadeInTitleView.alpha = titleAlpha
+    infoView.alpha = titleAlpha
   }
   
   //Calls the /movie/id/release_dates endpoint to get MPAA rating information
