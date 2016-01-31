@@ -265,8 +265,6 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
                 }
               }
               
-              print(movieReleaseInfo)
-              
               if let movieReleaseInfo = movieReleaseInfo {
                 var mpaaRating = movieReleaseInfo["certification"] as! String
                 if mpaaRating == "" {
@@ -394,7 +392,6 @@ class DetailViewController: UIViewController, UIScrollViewDelegate {
     
     if totalHeight < minimumInfoViewHeight {
       totalHeight = minimumInfoViewHeight
-      print("too small, changed to \(totalHeight)")
     }
     
     infoView.frame = CGRectMake(
